@@ -10,7 +10,7 @@ content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
 <style>
 :root {
-  --user: #007aff;
+  --user: #5bbcff;   /* ✅ 天蓝色 */
   --bg: #e9ebee;
 }
 
@@ -23,7 +23,7 @@ html, body {
   overflow: hidden;
 }
 
-/* ✅ 不再 fixed 居中 */
+/* ✅ 主结构（不会因键盘消失） */
 .app {
   max-width: 720px;
   margin: 0 auto;
@@ -34,7 +34,7 @@ html, body {
   box-shadow: 0 0 40px rgba(0,0,0,0.05);
 }
 
-/* ✅ 头部固定高度，不会被挤 */
+/* ✅ 头部 */
 header {
   flex-shrink: 0;
   padding: 16px 0;
@@ -45,7 +45,7 @@ header {
   border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
-/* ✅ 聊天区域可滚动 */
+/* ✅ 聊天区域 */
 #chat {
   flex: 1;
   overflow-y: auto;
@@ -55,24 +55,13 @@ header {
   gap: 14px;
 }
 
-/* ✅ 输入区固定在底部 */
-#inputArea {
-  flex-shrink: 0;
-  display: flex;
-  padding: 14px;
-  gap: 8px;
-  border-top: 1px solid rgba(0,0,0,0.05);
-  backdrop-filter: blur(20px);
-  background: rgba(255,255,255,0.85);
-}
-
 /* ✅ 气泡 */
 .bubble {
   max-width: 85%;
   padding: 12px 14px;
   border-radius: 18px;
   line-height: 1.6;
-  position: relative;
+  word-wrap: break-word;
 }
 
 .user {
@@ -89,7 +78,17 @@ header {
   border-bottom-left-radius: 6px;
 }
 
-/* ✅ 输入框 */
+/* ✅ 输入区 */
+#inputArea {
+  flex-shrink: 0;
+  display: flex;
+  padding: 14px;
+  gap: 8px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.85);
+}
+
 textarea {
   flex: 1;
   resize: none;
@@ -109,6 +108,31 @@ button {
   padding: 0 18px;
   border-radius: 14px;
   font-size: 15px;
+  cursor: pointer;
+}
+
+/* ✅ Thinking 动画 */
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  background: #999;
+  border-radius: 50%;
+  animation: blink 1.4s infinite both;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0% { opacity: 0.2; transform: translateY(0); }
+  20% { opacity: 1; transform: translateY(-3px); }
+  100% { opacity: 0.2; transform: translateY(0); }
 }
 </style>
 </head>
@@ -133,13 +157,16 @@ let conversation = [];
 let loading = false;
 const textarea = document.getElementById("input");
 
+/* ✅ 自动高度 */
 textarea.addEventListener("input", () => {
   textarea.style.height = "auto";
   textarea.style.height = textarea.scrollHeight + "px";
 });
 
+/* ✅ 发送消息 */
 async function send() {
   if (loading) return;
+
   const message = textarea.value.trim();
   if (!message) return;
 
@@ -148,6 +175,7 @@ async function send() {
   textarea.style.height = "auto";
   renderChat();
 
+  showThinking();
   loading = true;
 
   try {
@@ -158,17 +186,20 @@ async function send() {
     });
 
     const data = await response.json();
+    removeThinking();
 
     conversation.push({ role: "assistant", content: data.reply });
     renderChat();
 
   } catch (err) {
+    removeThinking();
     alert("网络错误");
   }
 
   loading = false;
 }
 
+/* ✅ 渲染 */
 function renderChat() {
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
@@ -185,6 +216,30 @@ function renderChat() {
   chat.scrollTop = chat.scrollHeight;
 }
 
+/* ✅ Thinking */
+function showThinking() {
+  const chat = document.getElementById("chat");
+
+  const div = document.createElement("div");
+  div.className = "bubble assistant thinking";
+  div.id = "thinking";
+
+  div.innerHTML = `
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  `;
+
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeThinking() {
+  const t = document.getElementById("thinking");
+  if (t) t.remove();
+}
+
+/* ✅ Enter发送 */
 textarea.addEventListener("keydown", function(e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
