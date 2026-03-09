@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Poe Claude Chat</title>
+  <title>Poe Claude Multi-turn Chat</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,70 +11,105 @@
     }
     textarea {
       width: 100%;
-      height: 100px;
+      height: 80px;
       padding: 8px;
-      font-size: 14px;
     }
     button {
       margin-top: 10px;
       padding: 8px 16px;
       cursor: pointer;
     }
-    #reply {
+    #chat {
       margin-top: 20px;
-      white-space: pre-wrap;
       background: #f5f5f5;
       padding: 12px;
       border-radius: 6px;
-      min-height: 60px;
+      white-space: pre-wrap;
     }
-    .loading {
-      color: gray;
-      font-style: italic;
+    .user {
+      color: blue;
+      margin-bottom: 6px;
+    }
+    .assistant {
+      color: green;
+      margin-bottom: 12px;
     }
   </style>
 </head>
 <body>
 
-<h2>Claude Sonnet 4.5 (via Poe)</h2>
+<h2>Claude Sonnet 4.5 (Multi-turn)</h2>
 
 <textarea id="input" placeholder="输入内容..."></textarea>
 <br/>
 <button onclick="send()">发送</button>
+<button onclick="clearChat()">清空对话</button>
 
-<div id="reply"></div>
+<div id="chat"></div>
 
 <script>
+let conversation = [];
+
 async function send() {
   const input = document.getElementById("input");
-  const replyDiv = document.getElementById("reply");
+  const chatDiv = document.getElementById("chat");
 
   const message = input.value.trim();
   if (!message) return;
 
-  replyDiv.innerText = "Thinking...";
-  replyDiv.classList.add("loading");
+  // ✅ 添加用户消息
+  conversation.push({
+    role: "user",
+    content: message
+  });
+
+  renderChat();
+
+  input.value = "";
 
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ messages: conversation })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      replyDiv.innerText = "Error: " + JSON.stringify(data);
-    } else {
-      replyDiv.innerText = data.reply;
+      alert("Error: " + JSON.stringify(data));
+      return;
     }
 
-  } catch (error) {
-    replyDiv.innerText = "Network error.";
-  }
+    // ✅ 添加 AI 回复
+    conversation.push({
+      role: "assistant",
+      content: data.reply
+    });
 
-  replyDiv.classList.remove("loading");
+    renderChat();
+
+  } catch (error) {
+    alert("Network error");
+  }
+}
+
+function renderChat() {
+  const chatDiv = document.getElementById("chat");
+  chatDiv.innerHTML = "";
+
+  conversation.forEach(msg => {
+    const div = document.createElement("div");
+    div.className = msg.role;
+    div.innerText =
+      (msg.role === "user" ? "你: " : "Claude: ") + msg.content;
+    chatDiv.appendChild(div);
+  });
+}
+
+function clearChat() {
+  conversation = [];
+  document.getElementById("chat").innerHTML = "";
 }
 </script>
 
