@@ -11,7 +11,7 @@
 :root {
   --user: #007aff;
   --assistant: #ffffff;
-  --bg: #f5f5f7;
+  --bg: #f2f2f7;
 }
 
 /* ✅ 字体自适应 */
@@ -24,72 +24,59 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   display: flex;
-  justify-content: center;
+  justify-content: center; /* ✅ 居中 */
 }
 
-/* ✅ 主容器 */
+/* ✅ 主容器缩窄 */
 .container {
   width: 100%;
-  max-width: 720px;
+  max-width: 720px;   /* ⭐ 控制整体宽度 */
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow: hidden;
+  background: #fff;
 }
 
-/* ✅ 毛玻璃极简顶部 */
+/* ✅ 标题 */
 header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  background: rgba(255, 255, 255, 0.6);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-
   text-align: center;
-  padding: 16px 0 12px 0;
-  font-weight: 600;
-  font-size: 1.1rem;
-  letter-spacing: 0.5px;
+  padding: 14px 0 10px; /* ⭐ 稍微靠上一点 */
+  font-weight: 700;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #eee;
 }
 
 /* ✅ 聊天区 */
 #chat {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px 20px 16px;
+  padding: 10px 16px 20px 16px; /* ⭐ 上边距减小 */
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 /* ✅ 气泡 */
 .bubble {
   max-width: 85%;
-  padding: 12px 14px;
-  border-radius: 18px;
+  padding: 12px;
+  border-radius: 16px;
   line-height: 1.6;
   word-wrap: break-word;
   animation: fadeIn 0.2s ease;
-  font-size: 1rem;
 }
 
 .user {
   align-self: flex-end;
   background: var(--user);
   color: white;
-  border-bottom-right-radius: 6px;
 }
 
 .assistant {
   align-self: flex-start;
   background: var(--assistant);
+  color: black;
   border: 1px solid #eee;
-  border-bottom-left-radius: 6px;
 }
 
 /* ✅ Thinking 动画 */
@@ -101,7 +88,7 @@ header {
 .dot {
   width: 6px;
   height: 6px;
-  background: #888;
+  background: #999;
   border-radius: 50%;
   animation: blink 1.4s infinite both;
 }
@@ -116,50 +103,36 @@ header {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ✅ 毛玻璃输入区 */
+/* ✅ 输入区 */
 #inputArea {
-  position: sticky;
-  bottom: 0;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  background: rgba(255,255,255,0.7);
-  border-top: 1px solid rgba(0,0,0,0.05);
-
   display: flex;
-  padding: 14px;
+  padding: 12px;
   gap: 8px;
+  border-top: 1px solid #eee;
 }
 
 textarea {
   flex: 1;
   resize: none;
-  padding: 10px 12px;
+  padding: 10px;
   font-size: 1rem;
-  border-radius: 14px;
-  border: 1px solid #ddd;
-  background: white;
+  border-radius: 12px;
+  border: 1px solid #ccc;
   max-height: 150px;
   overflow-y: auto;
-  outline: none;
 }
 
 button {
-  background: var(--user);
+  background: #007aff;
   color: white;
   border: none;
   padding: 0 18px;
-  border-radius: 14px;
+  border-radius: 12px;
   font-size: 1rem;
-  transition: 0.2s;
-}
-
-button:active {
-  transform: scale(0.95);
 }
 
 /* ✅ Markdown */
@@ -167,14 +140,14 @@ button:active {
   background: #1e1e1e;
   color: #eee;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow-x: auto;
 }
 
 .assistant code {
-  background: #f0f0f0;
+  background: #eee;
   padding: 2px 4px;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 </style>
 </head>
@@ -197,6 +170,7 @@ button:active {
 <script>
 let conversation = [];
 let loading = false;
+
 const textarea = document.getElementById("input");
 
 /* ✅ 自动高度增长 */
@@ -207,6 +181,7 @@ textarea.addEventListener("input", () => {
 
 async function send() {
   if (loading) return;
+
   const message = textarea.value.trim();
   if (!message) return;
 
